@@ -32,7 +32,7 @@ func (t *TransactionProducer) Send(ctx context.Context, message *SendMessage) *S
 		return NewSendRet(nil, err)
 	}
 
-	handler := message.Opts.TransactionHandle
+	handler := message.TakeTransactionHandle()
 	if handler == nil {
 		_ = transaction.RollBack()
 		return NewSendRet(nil, ErrTransactionNoHandle)

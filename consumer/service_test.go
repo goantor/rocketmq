@@ -13,7 +13,8 @@ func registerRouter(service *Service) {
 	normalTopic := service.Topic("test_normal_order")
 	{
 		normalTopic.Register("ab", func(msg *Message) error {
-			fmt.Println("normal/ab", string(msg.View().GetBody()))
+			view := msg.View()
+			fmt.Printf("normal tag:%s keys:%v properties:%v\n", *view.GetTag(), view.GetKeys(), view.GetProperties())
 			return nil
 		})
 	}
@@ -21,7 +22,8 @@ func registerRouter(service *Service) {
 	forceTopic := service.Topic("test_force_order")
 	{
 		forceTopic.Register("cd", func(msg *Message) error {
-			fmt.Println("force/cd", string(msg.View().GetBody()))
+			view := msg.View()
+			fmt.Printf("fifo tag:%s keys:%v properties:%v\n", *view.GetTag(), view.GetKeys(), view.GetProperties())
 			return nil
 		})
 	}
@@ -29,7 +31,8 @@ func registerRouter(service *Service) {
 	delayTopic := service.Topic("test_delay")
 	{
 		delayTopic.Register("ef", func(msg *Message) error {
-			fmt.Println("delay/ef", string(msg.View().GetBody()))
+			view := msg.View()
+			fmt.Printf("delay tag:%s keys:%v properties:%v\n", *view.GetTag(), view.GetKeys(), view.GetProperties())
 			return nil
 		})
 	}
@@ -37,7 +40,8 @@ func registerRouter(service *Service) {
 	transactionTopic := service.Topic("test_transaction")
 	{
 		transactionTopic.Register("gh", func(msg *Message) error {
-			fmt.Println("transaction/gh", string(msg.View().GetBody()))
+			view := msg.View()
+			fmt.Printf("transaction tag:%s keys:%v properties:%v\n", *view.GetTag(), view.GetKeys(), view.GetProperties())
 			return nil
 		})
 	}

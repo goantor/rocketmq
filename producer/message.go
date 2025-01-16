@@ -15,35 +15,64 @@ func NewSendMessage(val any) *SendMessage {
 	body, _ := json.Marshal(val)
 	return &SendMessage{
 		Body: body,
-		Opts: &SendMessageOption{},
+		opts: &SendMessageOption{},
 	}
 }
 
 type SendMessageOption struct {
-	Tag               Tag               `json:"-"`
-	TransactionHandle TransactionHandle `json:"-"`
-	DelayTime         time.Time         `json:"-"`
+	transactionHandle TransactionHandle
+	delayTime         time.Time
+
+	tag        Tag
+	keys       []string
+	properties map[string]string
 }
 
 type SendMessage struct {
-	Body []byte             `json:"body"`
-	Opts *SendMessageOption `json:"-"`
+	Body []byte `json:"body"`
+	opts *SendMessageOption
 }
 
 func (s *SendMessage) WithTag(tag Tag) {
-	s.Opts.Tag = tag
+	s.opts.tag = tag
 }
 
 func (s *SendMessage) WithTransactionHandle(handle TransactionHandle) {
-	s.Opts.TransactionHandle = handle
+	s.opts.transactionHandle = handle
+}
+
+func (s *SendMessage) TakeTransactionHandle() TransactionHandle {
+	return s.opts.transactionHandle
 }
 
 func (s *SendMessage) WithDelayTime(delayTime time.Time) {
-	s.Opts.DelayTime = delayTime
+	s.opts.delayTime = delayTime
+}
+
+func (s *SendMessage) TakeDelayTime() time.Time {
+	if s.opts == nil || s.opts.delayTime.IsZero() {
+		return time.Now()
+	}
+	return s.opts.delayTime
 }
 
 func (s *SendMessage) WithDelayDuration(duration time.Duration) {
-	s.Opts.DelayTime = time.Now().Add(duration)
+	s.opts.delayTime = time.Now().Add(duration)
+}
+
+func (s *SendMessage) WithKeys(keys ...string) {
+	s.opts.keys = keys
+}
+
+func (s *SendMessage) WithProperty(key, value string) {
+	s.getOrNewProperties()[key] = value
+}
+
+func (s *SendMessage) getOrNewProperties() map[string]string {
+	if s.opts.properties == nil {
+		s.opts.properties = make(map[string]string)
+	}
+	return s.opts.properties
 }
 
 func (s *SendMessage) TakeMqMessage(topic string) *mq.Message {
@@ -52,9 +81,19 @@ func (s *SendMessage) TakeMqMessage(topic string) *mq.Message {
 		Body:  s.Body,
 	}
 
-	if s.Opts != nil {
-		if s.Opts.Tag != "" {
-			msg.SetTag(string(s.Opts.Tag))
+	if s.opts != nil {
+		if s.opts.tag != "" {
+			msg.SetTag(string(s.opts.tag))
+		}
+
+		if len(s.opts.keys) > 0 {
+			msg.SetKeys(s.opts.keys...)
+		}
+
+		if len(s.opts.properties) > 0 {
+			for k, v := range s.opts.properties {
+				msg.AddProperty(k, v)
+			}
 		}
 	}
 

@@ -16,6 +16,10 @@ var (
 	}
 )
 
+type msgTest struct {
+	Msg string `json:"msg"`
+}
+
 func TestNormalProducer(t *testing.T) {
 	normalConfig := &DefaultProducerConfig{
 		Config: config,
@@ -28,10 +32,10 @@ func TestNormalProducer(t *testing.T) {
 		return
 	}
 
-	msg := &SendMessage{Body: []byte("ab")}
-	msg.Opts = &SendMessageOption{
-		Tag: "ab",
-	}
+	msg := NewSendMessage(&msgTest{Msg: "ab"})
+	msg.WithTag("ab")
+	msg.WithKeys("ab1", "ab2")
+	msg.WithProperty("ab3", "ab4")
 
 	ret := p.Send(context.Background(), msg)
 	if ret.TakeError() != nil {
@@ -56,9 +60,10 @@ func TestFifoProducer(t *testing.T) {
 		return
 	}
 
-	msg := &SendMessage{Body: []byte("cd"), Opts: &SendMessageOption{
-		Tag: "cd",
-	}}
+	msg := NewSendMessage(&msgTest{Msg: "cd"})
+	msg.WithTag("cd")
+	msg.WithKeys("cd1", "cd2")
+	msg.WithProperty("cd3", "cd4")
 
 	ret := p.Send(context.Background(), msg)
 	if ret.TakeError() != nil {
@@ -84,10 +89,12 @@ func TestDelayProducer(t *testing.T) {
 		return
 	}
 
-	msg := &SendMessage{Body: []byte("ef"), Opts: &SendMessageOption{
-		DelayTime: time.Now().Add(time.Second * 10),
-		Tag:       "ef",
-	}}
+	msg := NewSendMessage(&msgTest{Msg: "ef"})
+	msg.WithDelayDuration(time.Second * 10)
+	msg.WithTag("ef")
+	msg.WithKeys("ef1", "ef2")
+	msg.WithProperty("ef3", "ef4")
+
 	ret := p.Send(context.Background(), msg)
 	if ret.TakeError() != nil {
 		t.Fatal(ret.TakeError())
@@ -112,10 +119,11 @@ func TestTransactionProducer(t *testing.T) {
 		return
 	}
 
-	msg := &SendMessage{Body: []byte("gh"), Opts: &SendMessageOption{
-		TransactionHandle: commitHandle,
-		Tag:               "gh",
-	}}
+	msg := NewSendMessage(&msgTest{Msg: "gh"})
+	msg.WithTransactionHandle(commitHandle)
+	msg.WithTag("gh")
+	msg.WithKeys("gh1", "gh2")
+	msg.WithProperty("gh3", "gh4")
 
 	ret := p.Send(context.Background(), msg)
 	if ret.TakeError() != nil {
@@ -127,8 +135,8 @@ func TestTransactionProducer(t *testing.T) {
 		t.Logf("提交事务消息 %v", v.MessageID)
 	}
 
-	msg2 := &SendMessage{Body: []byte("回滚事务消息"), Opts: &SendMessageOption{
-		TransactionHandle: rollbackHandle,
+	msg2 := &SendMessage{Body: []byte("回滚事务消息"), opts: &SendMessageOption{
+		transactionHandle: rollbackHandle,
 	}}
 	ret2 := p.Send(context.Background(), msg2)
 	if ret2.TakeError() == nil {

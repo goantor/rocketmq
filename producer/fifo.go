@@ -20,6 +20,6 @@ type FifoProducer struct {
 
 func (f *FifoProducer) Send(ctx context.Context, message *SendMessage) *SendRet {
 	msg := message.TakeMqMessage(f.config.TakeTopic())
-	msg.SetMessageGroup("fifo")
+	msg.SetMessageGroup(message.TakeGroupKey())
 	return NewSendRet(f.client.Send(ctx, msg))
 }

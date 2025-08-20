@@ -22,6 +22,7 @@ func NewSendMessage(val any) *SendMessage {
 type SendMessageOption struct {
 	transactionHandle TransactionHandle
 	delayTime         time.Time
+	groupKey          string
 
 	tag        Tag
 	keys       []string
@@ -73,6 +74,14 @@ func (s *SendMessage) getOrNewProperties() map[string]string {
 		s.opts.properties = make(map[string]string)
 	}
 	return s.opts.properties
+}
+
+func (s *SendMessage) WithGroupKey(key string) {
+	s.opts.groupKey = key
+}
+
+func (s *SendMessage) TakeGroupKey() string {
+	return s.opts.groupKey
 }
 
 func (s *SendMessage) TakeMqMessage(topic string) *mq.Message {

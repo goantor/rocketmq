@@ -60,10 +60,9 @@ func TestFifoProducer(t *testing.T) {
 		return
 	}
 
-	msg := NewSendMessage(&msgTest{Msg: "cd"})
-	msg.WithTag("cd")
-	msg.WithKeys("cd1", "cd2")
-	msg.WithProperty("cd3", "cd4")
+	msg := NewSendMessage(&msgTest{Msg: "one"})
+	msg.WithKeys("one")
+	msg.WithGroupKey("one")
 
 	ret := p.Send(context.Background(), msg)
 	if ret.TakeError() != nil {
@@ -72,6 +71,20 @@ func TestFifoProducer(t *testing.T) {
 	}
 
 	for _, v := range ret.TakeReceipts() {
+		t.Log(v.MessageID)
+	}
+
+	msg2 := NewSendMessage(&msgTest{Msg: "two"})
+	msg2.WithKeys("two")
+	msg2.WithGroupKey("twoooooooooo2222123123")
+
+	ret2 := p.Send(context.Background(), msg2)
+	if ret2.TakeError() != nil {
+		t.Fatal(ret2.TakeError())
+		return
+	}
+
+	for _, v := range ret2.TakeReceipts() {
 		t.Log(v.MessageID)
 	}
 }
